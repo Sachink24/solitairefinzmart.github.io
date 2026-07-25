@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
+    <title>Solitaire · Lead Review System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        /* ============================================================
+           STYLES
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0b2b4a;
+            --primary-light: #1d3e5e;
+            --gold: #b8952e;
+            --gold-light: #d9b84a;
+            --bg-card: #ffffff;
+            --border: #dce3ed;
+            --text: #0b1a2f;
+            --text-muted: #4a5a72;
+            --shadow: 0 6px 18px rgba(0, 20, 40, 0.06);
+            --radius: 12px;
+            --transition: 0.2s ease;
+            --sidebar-width: 240px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fc;
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: #cfdceb;
+            padding: 28px 14px 30px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            border-right: 1px solid #1a314a;
+        }
+
+        .sidebar .brand {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #f0e8d0;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar .brand i {
+            color: var(--gold);
+            font-size: 22px;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #a0b6ce;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .nav a i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            background: #1a314a;
+            color: #fff;
+        }
+
+        .nav a.active {
+            background: #1f3d5e;
+            color: var(--gold-light);
+        }
+
+        .sidebar .footer {
+            font-size: 11px;
+            color: #4a6a8a;
+            margin-top: 24px;
+            border-top: 1px solid #1a314a;
+            padding-top: 16px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            flex: 1;
+            padding: 24px 28px;
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .topbar h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .topbar .lead-id {
+            background: #e7edf6;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* ===== BADGES ===== */
+        .badge-status {
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-sentback {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-draft {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .badge-submitted {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        /* ===== CARDS ===== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--gold);
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 20px;
+            margin: 6px 0;
+        }
+
+        .row .label {
+            font-weight: 500;
+            color: var(--text-muted);
+            min-width: 130px;
+        }
+
+        .row .value {
+            font-weight: 500;
+        }
+
+        .divider {
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+
+        /* ===== REPORT CARDS ===== */
+        .report-card {
+            background: #f9faff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            border-left: 4px solid var(--gold);
+            margin-top: 12px;
+        }
+
+        .report-card .meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .report-card .summary {
+            font-size: 14px;
+            margin: 6px 0;
+        }
+
+        .report-card .risk {
+            font-weight: 600;
+        }
+
+        .risk-low {
+            color: #0b7e4b;
+        }
+        .risk-medium {
+            color: #b45309;
+        }
+        .risk-high {
+            color: #b91c1c;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .chip-gold {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .chip-green {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .chip-blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .chip-red {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ===== BUTTONS ===== */
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #e7edf6;
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1a3a5a;
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #fff;
+        }
+        .btn-gold:hover {
+            background: #a07e26;
+        }
+
+        .btn-success {
+            background: #0b7e4b;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #09633b;
+        }
+
+        .btn-danger {
+            background: #b91c1c;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #991515;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover {
+            background: #e7edf6;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline {
+            margin-top: 12px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eef2f8;
+            font-size: 13px;
+        }
+
+        .timeline-item .time {
+            color: var(--text-muted);
+            min-width: 100px;
+        }
+
+        .timeline-item .desc {
+            flex: 1;
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        /* ===== FORM STYLES ===== */
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .field label .req {
+            color: #b91c1c;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #fafcff;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: 2px solid var(--gold);
+            outline-offset: 1px;
+        }
+
+        .field textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* ===== VIEWS ===== */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 820px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 16px;
+                max-width: 100%;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .mobile-menu {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main {
+                padding: 12px;
+            }
+
+            .topbar h1 {
+                font-size: 18px;
+            }
+
+            .topbar .lead-id {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+
+            .card {
+                padding: 14px;
+            }
+
+            .row .label {
+                min-width: 100px;
+            }
+
+            .btn {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+        }
+
+        /* ===== UTILITY ===== */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .flex {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .text-sm {
+            font-size: 13px;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .mobile-menu {
+            display: none;
+        }
+
+        /* ===== VIEW TOGGLE ===== */
+        .view-toggle {
+            display: none;
+        }
+
+        @media (max-width: 820px) {
+            .view-toggle {
+                display: block;
+                margin-bottom: 12px;
+            }
+
+            .view-toggle select {
+                width: 100%;
+                padding: 10px 14px;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                background: #fff;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: 'Inter', sans-serif;
+            }
+        }
+
+        .form-feedback {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .form-feedback.success {
+            color: #0b7e4b;
+        }
+        .form-feedback.error {
+            color: #b91c1c;
+        }
+
+        .report-section {
+            margin-top: 12px;
+        }
+        .report-section .section-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .report-section .section-value {
+            font-size: 14px;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-gem"></i> Solitaire</div>
+        <nav class="nav">
+            <a class="active" data-view="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a data-view="lead"><i class="fas fa-user"></i> Lead</a>
+            <a data-view="legal"><i class="fas fa-gavel"></i> Legal Review</a>
+            <a data-view="technical"><i class="fas fa-hard-hat"></i> Technical Review</a>
+            <a data-view="admin"><i class="fas fa-user-shield"></i> Admin</a>
+        </nav>
+        <div class="footer">v2.1 · DSA workflow</div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main" id="mainContent">
+
+        <!-- Mobile view toggle -->
+        <div class="view-toggle">
+            <select id="mobileViewSelect">
+                <option value="dashboard">Dashboard</option>
+                <option value="lead">Lead Details</option>
+                <option value="legal">Legal Review</option>
+                <option value="technical">Technical Review</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+
+        <!-- Topbar -->
+        <div id="topbarContainer"></div>
+
+        <!-- Views -->
+        <div id="viewContainer"></div>
+
+    </main>
+
+    <script>
+        // ================================================================
+        // MASTER LEAD DATA
+        // ================================================================
+        const MASTER_LEAD = {
+            leadId: 'SFM-LD-2026-0842',
+            applicantName: 'Rohit Sharma',
+            mobile: '+91 98765 43210',
+            email: 'rohit.sharma@example.com',
+            loanType: 'Home Loan',
+            loanAmount: 4500000,
+            propertyAddress: 'Flat No. 402, Sai Krupa CHS, Anjur Phata, Bhiwandi, Thane 421302',
+            city: 'Thane',
+            state: 'Maharashtra',
+            pincode: '421302',
+            builderName: 'Sai Krupa Developers',
+            projectName: 'Sai Krupa CHS',
+            agreementValue: 4800000,
+            marketValue: 5200000,
+            assignedLegalAssociate: 'Adv. Meera Sharma',
+            assignedTechnicalAssociate: 'Er. Suresh Iyer',
+            documentChecklist: [
+                'Sale Deed', 'Encumbrance Certificate', 'Property Tax Receipts',
+                'Mutation Extract', 'Approved Plan', 'OC/CC', 'NOC from Society', 'RERA'
+            ],
+            caseNotes: 'Initial verification in progress. Property appears to be freehold.',
+            status: 'pending',
+
+            legalReport: {
+                status: 'draft',
+                assignedTo: 'Adv. Meera Sharma',
+                submittedDate: null,
+                findings: '',
+                riskLevel: '',
+                remarks: '',
+                titleSearchStatus: '',
+                ownershipVerified: '',
+                chainDocuments: '',
+                encumbranceCheck: '',
+                litigationCheck: '',
+                approvalPlanVerified: '',
+                authorityClearance: '',
+                missingDocuments: '',
+                recommendation: '',
+                adminComment: '',
+                history: []
+            },
+
+            technicalReport: {
+                status: 'draft',
+                assignedTo: 'Er. Suresh Iyer',
+                submittedDate: null,
+                findings: '',
+                riskLevel: '',
+                remarks: '',
+                siteVisitStatus: '',
+                occupancyStatus: '',
+                constructionStage: '',
+                propertyType: '',
+                localityReview: '',
+                accessRoadStatus: '',
+                propertyCondition: '',
+                valuationEstimate: '',
+                marketComparables: '',
+                deviationFound: '',
+                recommendation: '',
+                adminComment: '',
+                history: []
+            },
+
+            adminDecision: {
+                legalStatus: null,
+                technicalStatus: null,
+                finalStatus: null,
+                comment: null,
+                timestamp: null
+            },
+
+            timeline: [
+                { time: new Date().toISOString(), event: 'Lead created', user: 'System' }
+            ]
+        };
+
+        // ================================================================
+        // DATA HELPERS
+        // ================================================================
+        function getLead() {
+            try {
+                const stored = localStorage.getItem('solitaire_lead_master');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    // Ensure nested objects exist
+                    if (!parsed.legalReport) parsed.legalReport = MASTER_LEAD.legalReport;
+                    if (!parsed.technicalReport) parsed.technicalReport = MASTER_LEAD.technicalReport;
+                    if (!parsed.adminDecision) parsed.adminDecision = MASTER_LEAD.adminDecision;
+                    if (!parsed.timeline) parsed.timeline = MASTER_LEAD.timeline;
+                    return parsed;
+                }
+            } catch (e) {}
+            return JSON.parse(JSON.stringify(MASTER_LEAD));
+        }
+
+        function saveLead(lead) {
+            try {
+                localStorage.setItem('solitaire_lead_master', JSON.stringify(lead));
+            } catch (e) {}
+        }
+
+        function updateLead(updatedLead) {
+            const current = getLead();
+            const merged = { ...current, ...updatedLead };
+            if (updatedLead.legalReport) merged.legalReport = { ...current.legalReport, ...updatedLead.legalReport };
+            if (updatedLead.technicalReport) merged.technicalReport = { ...current.technicalReport, ...updatedLead
+                    .technicalReport };
+            if (updatedLead.adminDecision) merged.adminDecision = { ...current.adminDecision, ...updatedLead
+                    .adminDecision };
+            if (updatedLead.timeline) merged.timeline = updatedLead.timeline;
+            saveLead(merged);
+            return merged;
+        }
+
+        function addTimeline(event, user = 'System') {
+            const lead = getLead();
+            lead.timeline.push({ time: new Date().toISOString(), event, user });
+            saveLead(lead);
+        }
+
+        function submitLegalReport(payload) {
+            const lead = getLead();
+            lead.legalReport = { ...lead.legalReport, ...payload, submittedDate: new Date().toISOString(),
+            status: 'submitted' };
+            lead.status = 'legal_review';
+            addTimeline('Legal report submitted by ' + lead.assignedLegalAssociate);
+            saveLead(lead);
+            return lead;
+        }
+
+        function submitTechnicalReport(payload) {
+            const lead = getLead();
+            lead.technicalReport = { ...lead.technicalReport, ...payload, submittedDate: new Date().toISOString(),
+                status: 'submitted' };
+            lead.status = 'technical_review';
+            addTimeline('Technical report submitted by ' + lead.assignedTechnicalAssociate);
+            saveLead(lead);
+            return lead;
+        }
+
+        function adminAction(section, action, comment = '') {
+            const lead = getLead();
+            const isLegal = section === 'legal';
+            const report = isLegal ? lead.legalReport : lead.technicalReport;
+            if (!report) return;
+
+            if (action === 'approve') {
+                report.status = 'approved';
+                addTimeline(`${isLegal ? 'Legal' : 'Technical'} approved by Admin`);
+            } else if (action === 'sentback') {
+                report.status = 'sentback';
+                report.adminComment = comment || 'Changes requested';
+                addTimeline(`${isLegal ? 'Legal' : 'Technical'} sent back for changes`);
+            } else if (action === 'reject') {
+                report.status = 'rejected';
+                report.adminComment = comment || 'Rejected';
+                addTimeline(`${isLegal ? 'Legal' : 'Technical'} rejected`);
+            }
+
+            if (lead.legalReport.status === 'approved' && lead.technicalReport.status === 'approved') {
+                lead.status = 'approved';
+                lead.adminDecision.finalStatus = 'approved';
+                addTimeline('Final approval granted by Admin');
+            } else if (lead.legalReport.status === 'rejected' || lead.technicalReport.status === 'rejected') {
+                lead.status = 'rejected';
+                lead.adminDecision.finalStatus = 'rejected';
+                addTimeline('Final rejection by Admin');
+            } else {
+                lead.status = 'admin_review';
+            }
+            saveLead(lead);
+            return lead;
+        }
+
+        // ================================================================
+        // RENDER FUNCTIONS
+        // ================================================================
+
+        let currentView = 'dashboard';
+
+        function renderTopbar() {
+            const lead = getLead();
+            const container = document.getElementById('topbarContainer');
+            container.innerHTML = `
+                <div class="topbar">
+                    <div>
+                        <h1>Lead Review</h1>
+                        <div class="flex gap-4">
+                            <span class="lead-id"><i class="far fa-file-alt"></i> ${lead.leadId}</span>
+                            <span class="badge-status ${lead.status === 'pending' ? 'badge-pending' : lead.status === 'approved' ? 'badge-approved' : lead.status === 'rejected' ? 'badge-rejected' : 'badge-submitted'}">${lead.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="topbar-actions">
+                        <span class="text-muted text-sm">${lead.applicantName}</span>
+                        <span class="text-muted text-sm"><i class="fas fa-phone-alt"></i> ${lead.mobile}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDashboard() {
+            const lead = getLead();
+            const container = document.getElementById('viewContainer');
+            container.innerHTML = `
+                <!-- Lead Summary -->
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-user"></i> Applicant & Property</div>
+                    <div class="row"><span class="label">Applicant</span><span class="value">${lead.applicantName}</span></div>
+                    <div class="row"><span class="label">Mobile / Email</span><span class="value">${lead.mobile} / ${lead.email}</span></div>
+                    <div class="row"><span class="label">Loan Type</span><span class="value">${lead.loanType}</span></div>
+                    <div class="row"><span class="label">Loan Amount</span><span class="value">₹${(lead.loanAmount/100000).toFixed(1)}L</span></div>
+                    <div class="row"><span class="label">Property</span><span class="value">${lead.propertyAddress}</span></div>
+                    <div class="row"><span class="label">City / State</span><span class="value">${lead.city}, ${lead.state}</span></div>
+                    <div class="row"><span class="label">Builder / Project</span><span class="value">${lead.builderName} · ${lead.projectName}</span></div>
+                    <div class="row"><span class="label">Agreement / Market Value</span><span class="value">₹${(lead.agreementValue/100000).toFixed(1)}L / ₹${(lead.marketValue/100000).toFixed(1)}L</span></div>
+                    <div class="row"><span class="label">Assigned Legal</span><span class="value">${lead.assignedLegalAssociate}</span></div>
+                    <div class="row"><span class="label">Assigned Technical</span><span class="value">${lead.assignedTechnicalAssociate}</span></div>
+                    <div class="divider"></div>
+                    <div><span class="label">Documents</span>
+                        <div class="flex" style="margin-top:4px;">${lead.documentChecklist.map(d => `<span class="chip chip-gold">${d}</span>`).join(' ')}</div>
+                    </div>
+                    <div class="divider"></div>
+                    <div><span class="label">Case Notes</span><div class="text-muted text-sm" style="margin-top:4px;">${lead.caseNotes}</div></div>
+                </div>
+
+                <!-- Legal & Technical Sections -->
+                <div class="grid-2 mt-16">
+                    <!-- Legal -->
+                    <div class="card">
+                        <div class="card-title"><i class="fas fa-gavel"></i> Legal Report</div>
+                        <div><span class="label">Assigned:</span> ${lead.assignedLegalAssociate}</div>
+                        <div><span class="label">Status:</span> <span class="badge-status ${lead.legalReport.status === 'draft' ? 'badge-draft' : lead.legalReport.status === 'submitted' ? 'badge-submitted' : lead.legalReport.status === 'approved' ? 'badge-approved' : lead.legalReport.status === 'sentback' ? 'badge-sentback' : 'badge-rejected'}">${lead.legalReport.status.toUpperCase()}</span></div>
+                        <div><span class="label">Submitted:</span> ${lead.legalReport.submittedDate ? new Date(lead.legalReport.submittedDate).toLocaleDateString() : '—'}</div>
+                        ${lead.legalReport.findings ? `
+                            <div class="report-card" style="border-left-color: ${lead.legalReport.riskLevel === 'Low' ? '#0b7e4b' : lead.legalReport.riskLevel === 'Medium' ? '#b45309' : '#b91c1c'};">
+                                <div class="meta"><span>Risk: <span class="risk ${lead.legalReport.riskLevel === 'Low' ? 'risk-low' : lead.legalReport.riskLevel === 'Medium' ? 'risk-medium' : 'risk-high'}">${lead.legalReport.riskLevel || '—'}</span></span>
+                                <span>${lead.legalReport.status === 'approved' ? '✅' : lead.legalReport.status === 'sentback' ? '↩️' : lead.legalReport.status === 'rejected' ? '❌' : ''}</span></div>
+                                <div class="summary">${lead.legalReport.findings || '—'}</div>
+                                ${lead.legalReport.remarks ? `<div class="text-muted text-sm">${lead.legalReport.remarks}</div>` : ''}
+                                ${lead.legalReport.adminComment ? `<div class="text-sm" style="color:#1e40af;background:#dbeafe;padding:4px 10px;border-radius:6px;margin-top:4px;">Admin: ${lead.legalReport.adminComment}</div>` : ''}
+                            </div>
+                        ` : `<div class="empty-state">No legal report yet</div>`}
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="navigateView('legal')"><i class="fas fa-pen"></i> Legal Review</button>
+                            ${lead.legalReport.status === 'submitted' || lead.legalReport.status === 'sentback' ? `
+                                <button class="btn btn-success" onclick="handleAdminAction('legal','approve')"><i class="fas fa-check"></i> Approve</button>
+                                <button class="btn btn-outline" onclick="handleAdminActionWithComment('legal','sentback')"><i class="fas fa-undo"></i> Suggest Changes</button>
+                                <button class="btn btn-danger" onclick="handleAdminActionWithComment('legal','reject')"><i class="fas fa-times"></i> Reject</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <!-- Technical -->
+                    <div class="card">
+                        <div class="card-title"><i class="fas fa-hard-hat"></i> Technical Report</div>
+                        <div><span class="label">Assigned:</span> ${lead.assignedTechnicalAssociate}</div>
+                        <div><span class="label">Status:</span> <span class="badge-status ${lead.technicalReport.status === 'draft' ? 'badge-draft' : lead.technicalReport.status === 'submitted' ? 'badge-submitted' : lead.technicalReport.status === 'approved' ? 'badge-approved' : lead.technicalReport.status === 'sentback' ? 'badge-sentback' : 'badge-rejected'}">${lead.technicalReport.status.toUpperCase()}</span></div>
+                        <div><span class="label">Submitted:</span> ${lead.technicalReport.submittedDate ? new Date(lead.technicalReport.submittedDate).toLocaleDateString() : '—'}</div>
+                        ${lead.technicalReport.findings ? `
+                            <div class="report-card" style="border-left-color: ${lead.technicalReport.riskLevel === 'Low' ? '#0b7e4b' : lead.technicalReport.riskLevel === 'Medium' ? '#b45309' : '#b91c1c'};">
+                                <div class="meta"><span>Risk: <span class="risk ${lead.technicalReport.riskLevel === 'Low' ? 'risk-low' : lead.technicalReport.riskLevel === 'Medium' ? 'risk-medium' : 'risk-high'}">${lead.technicalReport.riskLevel || '—'}</span></span>
+                                <span>${lead.technicalReport.status === 'approved' ? '✅' : lead.technicalReport.status === 'sentback' ? '↩️' : lead.technicalReport.status === 'rejected' ? '❌' : ''}</span></div>
+                                <div class="summary">${lead.technicalReport.findings || '—'}</div>
+                                ${lead.technicalReport.remarks ? `<div class="text-muted text-sm">${lead.technicalReport.remarks}</div>` : ''}
+                                ${lead.technicalReport.adminComment ? `<div class="text-sm" style="color:#1e40af;background:#dbeafe;padding:4px 10px;border-radius:6px;margin-top:4px;">Admin: ${lead.technicalReport.adminComment}</div>` : ''}
+                            </div>
+                        ` : `<div class="empty-state">No technical report yet</div>`}
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="navigateView('technical')"><i class="fas fa-pen"></i> Technical Review</button>
+                            ${lead.technicalReport.status === 'submitted' || lead.technicalReport.status === 'sentback' ? `
+                                <button class="btn btn-success" onclick="handleAdminAction('technical','approve')"><i class="fas fa-check"></i> Approve</button>
+                                <button class="btn btn-outline" onclick="handleAdminActionWithComment('technical','sentback')"><i class="fas fa-undo"></i> Suggest Changes</button>
+                                <button class="btn btn-danger" onclick="handleAdminActionWithComment('technical','reject')"><i class="fas fa-times"></i> Reject</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="card mt-16">
+                    <div class="card-title"><i class="fas fa-history"></i> Workflow Timeline</div>
+                    <div class="timeline">
+                        ${lead.timeline.slice().reverse().map(t => `
+                            <div class="timeline-item">
+                                <span class="time">${new Date(t.time).toLocaleString()}</span>
+                                <span class="desc">${t.event} <span class="text-muted">· ${t.user}</span></span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLeadView() {
+            const lead = getLead();
+            const container = document.getElementById('viewContainer');
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-user"></i> Lead Details</div>
+                    <div class="row"><span class="label">Lead ID</span><span class="value">${lead.leadId}</span></div>
+                    <div class="row"><span class="label">Applicant Name</span><span class="value">${lead.applicantName}</span></div>
+                    <div class="row"><span class="label">Mobile</span><span class="value">${lead.mobile}</span></div>
+                    <div class="row"><span class="label">Email</span><span class="value">${lead.email}</span></div>
+                    <div class="row"><span class="label">Loan Type</span><span class="value">${lead.loanType}</span></div>
+                    <div class="row"><span class="label">Loan Amount</span><span class="value">₹${lead.loanAmount.toLocaleString()}</span></div>
+                    <div class="row"><span class="label">Property Address</span><span class="value">${lead.propertyAddress}</span></div>
+                    <div class="row"><span class="label">City / State</span><span class="value">${lead.city}, ${lead.state}</span></div>
+                    <div class="row"><span class="label">Pincode</span><span class="value">${lead.pincode}</span></div>
+                    <div class="row"><span class="label">Builder</span><span class="value">${lead.builderName}</span></div>
+                    <div class="row"><span class="label">Project</span><span class="value">${lead.projectName}</span></div>
+                    <div class="row"><span class="label">Agreement Value</span><span class="value">₹${lead.agreementValue.toLocaleString()}</span></div>
+                    <div class="row"><span class="label">Market Value</span><span class="value">₹${lead.marketValue.toLocaleString()}</span></div>
+                    <div class="row"><span class="label">Assigned Legal</span><span class="value">${lead.assignedLegalAssociate}</span></div>
+                    <div class="row"><span class="label">Assigned Technical</span><span class="value">${lead.assignedTechnicalAssociate}</span></div>
+                    <div class="row"><span class="label">Status</span><span class="value">${lead.status.toUpperCase()}</span></div>
+                    <div class="divider"></div>
+                    <div><span class="label">Documents</span>
+                        <div class="flex" style="margin-top:4px;">${lead.documentChecklist.map(d => `<span class="chip chip-gold">${d}</span>`).join(' ')}</div>
+                    </div>
+                    <div class="divider"></div>
+                    <div><span class="label">Case Notes</span><div class="text-muted text-sm" style="margin-top:4px;">${lead.caseNotes}</div></div>
+                </div>
+                <div class="actions mt-16">
+                    <button class="btn btn-primary" onclick="navigateView('legal')"><i class="fas fa-gavel"></i> Legal Review</button>
+                    <button class="btn btn-primary" onclick="navigateView('technical')"><i class="fas fa-hard-hat"></i> Technical Review</button>
+                    <button class="btn btn-outline" onclick="navigateView('dashboard')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                </div>
+            `;
+        }
+
+        function renderLegalView() {
+            const lead = getLead();
+            const report = lead.legalReport;
+            const container = document.getElementById('viewContainer');
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-gavel"></i> Legal Report</div>
+                    <div class="row"><span class="label">Lead ID</span><span class="value">${lead.leadId}</span></div>
+                    <div class="row"><span class="label">Applicant</span><span class="value">${lead.applicantName}</span></div>
+                    <div class="row"><span class="label">Assigned To</span><span class="value">${lead.assignedLegalAssociate}</span></div>
+                    <div class="row"><span class="label">Status</span><span class="badge-status ${report.status === 'draft' ? 'badge-draft' : report.status === 'submitted' ? 'badge-submitted' : report.status === 'approved' ? 'badge-approved' : report.status === 'sentback' ? 'badge-sentback' : 'badge-rejected'}">${report.status.toUpperCase()}</span></div>
+                    ${report.adminComment ? `<div class="text-sm" style="color:#1e40af;background:#dbeafe;padding:8px 12px;border-radius:8px;margin:8px 0;">Admin Comment: ${report.adminComment}</div>` : ''}
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-file-alt"></i> Legal Evaluation Form</div>
+                    <form id="legalForm">
+                        <div class="form-grid-2">
+                            <div class="field">
+                                <label>Title Search Status <span class="req">*</span></label>
+                                <select id="legalTitleSearch">
+                                    <option value="">Select...</option>
+                                    <option value="Clear" ${report.titleSearchStatus === 'Clear' ? 'selected' : ''}>Clear</option>
+                                    <option value="Conditional" ${report.titleSearchStatus === 'Conditional' ? 'selected' : ''}>Conditional</option>
+                                    <option value="Defective" ${report.titleSearchStatus === 'Defective' ? 'selected' : ''}>Defective</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Ownership Verified <span class="req">*</span></label>
+                                <select id="legalOwnership">
+                                    <option value="">Select...</option>
+                                    <option value="Yes" ${report.ownershipVerified === 'Yes' ? 'selected' : ''}>Yes</option>
+                                    <option value="No" ${report.ownershipVerified === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="Partial" ${report.ownershipVerified === 'Partial' ? 'selected' : ''}>Partial</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Chain Documents <span class="req">*</span></label>
+                                <select id="legalChain">
+                                    <option value="">Select...</option>
+                                    <option value="Complete" ${report.chainDocuments === 'Complete' ? 'selected' : ''}>Complete</option>
+                                    <option value="Partial" ${report.chainDocuments === 'Partial' ? 'selected' : ''}>Partial</option>
+                                    <option value="Missing" ${report.chainDocuments === 'Missing' ? 'selected' : ''}>Missing</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Encumbrance Check <span class="req">*</span></label>
+                                <select id="legalEncumbrance">
+                                    <option value="">Select...</option>
+                                    <option value="Clear" ${report.encumbranceCheck === 'Clear' ? 'selected' : ''}>Clear</option>
+                                    <option value="Encumbrance Found" ${report.encumbranceCheck === 'Encumbrance Found' ? 'selected' : ''}>Encumbrance Found</option>
+                                    <option value="Pending" ${report.encumbranceCheck === 'Pending' ? 'selected' : ''}>Pending</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Litigation Check <span class="req">*</span></label>
+                                <select id="legalLitigation">
+                                    <option value="">Select...</option>
+                                    <option value="None" ${report.litigationCheck === 'None' ? 'selected' : ''}>None</option>
+                                    <option value="Pending" ${report.litigationCheck === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Disputed" ${report.litigationCheck === 'Disputed' ? 'selected' : ''}>Disputed</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Approval Plan Verified</label>
+                                <select id="legalApprovalPlan">
+                                    <option value="">Select...</option>
+                                    <option value="Yes" ${report.approvalPlanVerified === 'Yes' ? 'selected' : ''}>Yes</option>
+                                    <option value="No" ${report.approvalPlanVerified === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="NA" ${report.approvalPlanVerified === 'NA' ? 'selected' : ''}>N/A</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Authority Clearance</label>
+                                <select id="legalAuthority">
+                                    <option value="">Select...</option>
+                                    <option value="Obtained" ${report.authorityClearance === 'Obtained' ? 'selected' : ''}>Obtained</option>
+                                    <option value="Pending" ${report.authorityClearance === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Not Required" ${report.authorityClearance === 'Not Required' ? 'selected' : ''}>Not Required</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Risk Level <span class="req">*</span></label>
+                                <select id="legalRiskLevel">
+                                    <option value="">Select...</option>
+                                    <option value="Low" ${report.riskLevel === 'Low' ? 'selected' : ''}>Low</option>
+                                    <option value="Medium" ${report.riskLevel === 'Medium' ? 'selected' : ''}>Medium</option>
+                                    <option value="High" ${report.riskLevel === 'High' ? 'selected' : ''}>High</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Missing Documents</label>
+                            <input type="text" id="legalMissingDocs" value="${report.missingDocuments || ''}" placeholder="List any missing documents" />
+                        </div>
+                        <div class="field">
+                            <label>Findings / Observations <span class="req">*</span></label>
+                            <textarea id="legalFindings" placeholder="Detailed legal findings...">${report.findings || ''}</textarea>
+                        </div>
+                        <div class="field">
+                            <label>Remarks</label>
+                            <textarea id="legalRemarks" placeholder="Any additional remarks...">${report.remarks || ''}</textarea>
+                        </div>
+                        <div class="field">
+                            <label>Recommendation <span class="req">*</span></label>
+                            <select id="legalRecommendation">
+                                <option value="">Select...</option>
+                                <option value="Suitable" ${report.recommendation === 'Suitable' ? 'selected' : ''}>Suitable for mortgage</option>
+                                <option value="Conditional" ${report.recommendation === 'Conditional' ? 'selected' : ''}>Conditional approval</option>
+                                <option value="Not Suitable" ${report.recommendation === 'Not Suitable' ? 'selected' : ''}>Not suitable</option>
+                            </select>
+                        </div>
+                        <div class="actions">
+                            <button type="button" class="btn btn-outline" onclick="saveLegalDraft()"><i class="fas fa-save"></i> Save Draft</button>
+                            <button type="button" class="btn btn-gold" onclick="submitLegalReportForm()"><i class="fas fa-paper-plane"></i> Submit Report</button>
+                            <button type="button" class="btn btn-outline" onclick="navigateView('dashboard')"><i class="fas fa-arrow-left"></i> Back</button>
+                        </div>
+                        <div id="legalFormFeedback" class="form-feedback"></div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function renderTechnicalView() {
+            const lead = getLead();
+            const report = lead.technicalReport;
+            const container = document.getElementById('viewContainer');
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-hard-hat"></i> Technical Report</div>
+                    <div class="row"><span class="label">Lead ID</span><span class="value">${lead.leadId}</span></div>
+                    <div class="row"><span class="label">Applicant</span><span class="value">${lead.applicantName}</span></div>
+                    <div class="row"><span class="label">Assigned To</span><span class="value">${lead.assignedTechnicalAssociate}</span></div>
+                    <div class="row"><span class="label">Status</span><span class="badge-status ${report.status === 'draft' ? 'badge-draft' : report.status === 'submitted' ? 'badge-submitted' : report.status === 'approved' ? 'badge-approved' : report.status === 'sentback' ? 'badge-sentback' : 'badge-rejected'}">${report.status.toUpperCase()}</span></div>
+                    ${report.adminComment ? `<div class="text-sm" style="color:#1e40af;background:#dbeafe;padding:8px 12px;border-radius:8px;margin:8px 0;">Admin Comment: ${report.adminComment}</div>` : ''}
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-clipboard-list"></i> Technical Evaluation Form</div>
+                    <form id="techForm">
+                        <div class="form-grid-2">
+                            <div class="field">
+                                <label>Site Visit Status <span class="req">*</span></label>
+                                <select id="techSiteVisit">
+                                    <option value="">Select...</option>
+                                    <option value="Visited" ${report.siteVisitStatus === 'Visited' ? 'selected' : ''}>Visited</option>
+                                    <option value="Not Visited" ${report.siteVisitStatus === 'Not Visited' ? 'selected' : ''}>Not Visited</option>
+                                    <option value="Pending" ${report.siteVisitStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Occupancy Status <span class="req">*</span></label>
+                                <select id="techOccupancy">
+                                    <option value="">Select...</option>
+                                    <option value="Owner Occupied" ${report.occupancyStatus === 'Owner Occupied' ? 'selected' : ''}>Owner Occupied</option>
+                                    <option value="Tenanted" ${report.occupancyStatus === 'Tenanted' ? 'selected' : ''}>Tenanted</option>
+                                    <option value="Vacant" ${report.occupancyStatus === 'Vacant' ? 'selected' : ''}>Vacant</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Construction Stage <span class="req">*</span></label>
+                                <select id="techConstruction">
+                                    <option value="">Select...</option>
+                                    <option value="Completed" ${report.constructionStage === 'Completed' ? 'selected' : ''}>Completed</option>
+                                    <option value="Under Construction" ${report.constructionStage === 'Under Construction' ? 'selected' : ''}>Under Construction</option>
+                                    <option value="Proposed" ${report.constructionStage === 'Proposed' ? 'selected' : ''}>Proposed</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Property Type <span class="req">*</span></label>
+                                <select id="techPropertyType">
+                                    <option value="">Select...</option>
+                                    <option value="Residential Flat" ${report.propertyType === 'Residential Flat' ? 'selected' : ''}>Residential Flat</option>
+                                    <option value="Independent House" ${report.propertyType === 'Independent House' ? 'selected' : ''}>Independent House</option>
+                                    <option value="Commercial" ${report.propertyType === 'Commercial' ? 'selected' : ''}>Commercial</option>
+                                    <option value="Industrial" ${report.propertyType === 'Industrial' ? 'selected' : ''}>Industrial</option>
+                                    <option value="Plot" ${report.propertyType === 'Plot' ? 'selected' : ''}>Plot</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Locality Review <span class="req">*</span></label>
+                                <select id="techLocality">
+                                    <option value="">Select...</option>
+                                    <option value="Prime" ${report.localityReview === 'Prime' ? 'selected' : ''}>Prime</option>
+                                    <option value="Developing" ${report.localityReview === 'Developing' ? 'selected' : ''}>Developing</option>
+                                    <option value="Peripheral" ${report.localityReview === 'Peripheral' ? 'selected' : ''}>Peripheral</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Access Road <span class="req">*</span></label>
+                                <select id="techRoad">
+                                    <option value="">Select...</option>
+                                    <option value="Pucca Road" ${report.accessRoadStatus === 'Pucca Road' ? 'selected' : ''}>Pucca Road</option>
+                                    <option value="Kachha Road" ${report.accessRoadStatus === 'Kachha Road' ? 'selected' : ''}>Kachha Road</option>
+                                    <option value="Approachable" ${report.accessRoadStatus === 'Approachable' ? 'selected' : ''}>Approachable</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Property Condition <span class="req">*</span></label>
+                                <select id="techCondition">
+                                    <option value="">Select...</option>
+                                    <option value="Excellent" ${report.propertyCondition === 'Excellent' ? 'selected' : ''}>Excellent</option>
+                                    <option value="Good" ${report.propertyCondition === 'Good' ? 'selected' : ''}>Good</option>
+                                    <option value="Average" ${report.propertyCondition === 'Average' ? 'selected' : ''}>Average</option>
+                                    <option value="Poor" ${report.propertyCondition === 'Poor' ? 'selected' : ''}>Poor</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Deviation Found</label>
+                                <select id="techDeviation">
+                                    <option value="">Select...</option>
+                                    <option value="No" ${report.deviationFound === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="Minor" ${report.deviationFound === 'Minor' ? 'selected' : ''}>Minor</option>
+                                    <option value="Major" ${report.deviationFound === 'Major' ? 'selected' : ''}>Major</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Risk Level <span class="req">*</span></label>
+                                <select id="techRiskLevel">
+                                    <option value="">Select...</option>
+                                    <option value="Low" ${report.riskLevel === 'Low' ? 'selected' : ''}>Low</option>
+                                    <option value="Medium" ${report.riskLevel === 'Medium' ? 'selected' : ''}>Medium</option>
+                                    <option value="High" ${report.riskLevel === 'High' ? 'selected' : ''}>High</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Valuation Estimate (₹)</label>
+                                <input type="number" id="techValuation" value="${report.valuationEstimate || ''}" placeholder="Estimated value" step="1000" />
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Market Comparables</label>
+                            <input type="text" id="techComparables" value="${report.marketComparables || ''}" placeholder="e.g. Similar properties in area: ₹50-60L" />
+                        </div>
+                        <div class="field">
+                            <label>Findings / Observations <span class="req">*</span></label>
+                            <textarea id="techFindings" placeholder="Detailed technical findings...">${report.findings || ''}</textarea>
+                        </div>
+                        <div class="field">
+                            <label>Remarks</label>
+                            <textarea id="techRemarks" placeholder="Any additional remarks...">${report.remarks || ''}</textarea>
+                        </div>
+                        <div class="field">
+                            <label>Recommendation <span class="req">*</span></label>
+                            <select id="techRecommendation">
+                                <option value="">Select...</option>
+                                <option value="Suitable" ${report.recommendation === 'Suitable' ? 'selected' : ''}>Suitable for mortgage</option>
+                                <option value="Conditional" ${report.recommendation === 'Conditional' ? 'selected' : ''}>Conditional approval</option>
+                                <option value="Not Suitable" ${report.recommendation === 'Not Suitable' ? 'selected' : ''}>Not suitable</option>
+                            </select>
+                        </div>
+                        <div class="actions">
+                            <button type="button" class="btn btn-outline" onclick="saveTechDraft()"><i class="fas fa-save"></i> Save Draft</button>
+                            <button type="button" class="btn btn-gold" onclick="submitTechReportForm()"><i class="fas fa-paper-plane"></i> Submit Report</button>
+                            <button type="button" class="btn btn-outline" onclick="navigateView('dashboard')"><i class="fas fa-arrow-left"></i> Back</button>
+                        </div>
+                        <div id="techFormFeedback" class="form-feedback"></div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function renderAdminView() {
+            const lead = getLead();
+            const container = document.getElementById('viewContainer');
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-user-shield"></i> Admin Decisions</div>
+                    <div class="row"><span class="label">Lead</span><span class="value">${lead.leadId} - ${lead.applicantName}</span></div>
+                    <div class="row"><span class="label">Current Status</span><span class="badge-status ${lead.status === 'pending' ? 'badge-pending' : lead.status === 'approved' ? 'badge-approved' : lead.status === 'rejected' ? 'badge-rejected' : 'badge-submitted'}">${lead.status.toUpperCase()}</span></div>
+                </div>
+
+                <div class="grid-2 mt-16">
+                    <div class="card">
+                        <div class="card-title"><i class="fas fa-gavel"></i> Legal Report</div>
+                        <div><span class="label">Status:</span> <span class="badge-status ${lead.legalReport.status === 'draft' ? 'badge-draft' : lead.legalReport.status === 'submitted' ? 'badge-submitted' : lead.legalReport.status === 'approved' ? 'badge-approved' : lead.legalReport.status === 'sentback' ? 'badge-sentback' : 'badge-rejected'}">${lead.legalReport.status.toUpperCase()}</span></div>
+                        ${lead.legalReport.findings ? `
+                            <div class="report-section">
+                                <div class="section-label">Findings</div>
+                                <div class="section-value">${lead.legalReport.findings}</div>
+                            </div>
+                            <div class="report-section">
+                                <div class="section-label">Risk Level</div>
+                                <div class="section-value"><span class="risk ${lead.legalReport.riskLevel === 'Low' ? 'risk-low' : lead.legalReport.riskLevel === 'Medium' ? 'risk-medium' : 'risk-high'}">${lead.legalReport.riskLevel || '—'}</span></div>
+                            </div>
+                        ` : `<div class="empty-state">No report submitted yet</div>`}
+                        ${lead.legalReport.adminComment ? `<div class="text-sm" style="color:#1e40af;background:#dbeafe;padding:8px 12px;border-radius:8px;margin:8px 0;">Admin Comment: ${lead.legalReport.adminComment}</div>` : ''}
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="fas fa-hard-hat"></i> Technical Report</div>
+                        <div><span class="label">Status:</span> <span class="badge-status ${lead.technicalReport.status === 'draft' ? 'badge-draft' : lead.technicalReport.status === 'submitted' ? 'badge-submitted' : lead.technicalReport.status === 'approved' ? 'badge-approved' : lead.technicalReport.status === 'sentback' ? 'badge-sentback' : 'badge-rejected'}">${lead.technicalReport.status.toUpperCase()}</span></div>
+                        ${lead.technicalReport.findings ? `
+                            <div class="report-section">
+                                <div class="section-label">Findings</div>
+                                <div class="section-value">${lead.technicalReport.findings}</div>
+                            </div>
+                            <div class="report-section">
+                                <div class="section-label">Risk Level</div>
+                                <div class="section-value"><span class="risk ${lead.technicalReport.riskLevel === 'Low' ? 'risk-low' : lead.technicalReport.riskLevel === 'Medium' ? 'risk-medium' : 'risk-high'}">${lead.technicalReport.riskLevel || '—'}</span></div>
+                            </div>
+                        ` : `<div class="empty-state">No report submitted yet</div>`}
+                        ${lead.technicalReport.adminComment ? `<div class="text-sm" style="color:#1e40af;background:#dbeafe;padding:8px 12px;border-radius:8px;margin:8px 0;">Admin Comment: ${lead.technicalReport.adminComment}</div>` : ''}
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-title"><i class="fas fa-check-circle"></i> Final Decision</div>
+                    <div class="row"><span class="label">Final Status</span><span class="badge-status ${lead.adminDecision.finalStatus === 'approved' ? 'badge-approved' : lead.adminDecision.finalStatus === 'rejected' ? 'badge-rejected' : 'badge-pending'}">${lead.adminDecision.finalStatus ? lead.adminDecision.finalStatus.toUpperCase() : 'PENDING'}</span></div>
+                    ${lead.adminDecision.comment ? `<div class="row"><span class="label">Comment</span><span class="value">${lead.adminDecision.comment}</span></div>` : ''}
+                    ${lead.adminDecision.timestamp ? `<div class="row"><span class="label">Decision Date</span><span class="value">${new Date(lead.adminDecision.timestamp).toLocaleString()}</span></div>` : ''}
+                </div>
+
+                <div class="actions mt-16">
+                    <button class="btn btn-outline" onclick="navigateView('dashboard')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                </div>
+            `;
+        }
+
+        // ================================================================
+        // NAVIGATION
+        // ================================================================
+
+        function navigateView(view) {
+            currentView = view;
+            // Update nav
+            document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+            document.querySelector(`.nav a[data-view="${view}"]`)?.classList.add('active');
+            // Update mobile select
+            document.getElementById('mobileViewSelect').value = view;
+            // Render
+            renderTopbar();
+            switch (view) {
+                case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'lead':
+                    renderLeadView();
+                    break;
+                case 'legal':
+                    renderLegalView();
+                    break;
+                case 'technical':
+                    renderTechnicalView();
+                    break;
+                case 'admin':
+                    renderAdminView();
+                    break;
+                default:
+                    renderDashboard();
+            }
+        }
+
+        // ================================================================
+        // FORM HANDLERS
+        // ================================================================
+
+        function getLegalFormData() {
+            return {
+                titleSearchStatus: document.getElementById('legalTitleSearch').value,
+                ownershipVerified: document.getElementById('legalOwnership').value,
+                chainDocuments: document.getElementById('legalChain').value,
+                encumbranceCheck: document.getElementById('legalEncumbrance').value,
+                litigationCheck: document.getElementById('legalLitigation').value,
+                approvalPlanVerified: document.getElementById('legalApprovalPlan').value,
+                authorityClearance: document.getElementById('legalAuthority').value,
+                riskLevel: document.getElementById('legalRiskLevel').value,
+                missingDocuments: document.getElementById('legalMissingDocs').value,
+                findings: document.getElementById('legalFindings').value,
+                remarks: document.getElementById('legalRemarks').value,
+                recommendation: document.getElementById('legalRecommendation').value,
+            };
+        }
+
+        function getTechFormData() {
+            return {
+                siteVisitStatus: document.getElementById('techSiteVisit').value,
+                occupancyStatus: document.getElementById('techOccupancy').value,
+                constructionStage: document.getElementById('techConstruction').value,
+                propertyType: document.getElementById('techPropertyType').value,
+                localityReview: document.getElementById('techLocality').value,
+                accessRoadStatus: document.getElementById('techRoad').value,
+                propertyCondition: document.getElementById('techCondition').value,
+                deviationFound: document.getElementById('techDeviation').value,
+                riskLevel: document.getElementById('techRiskLevel').value,
+                valuationEstimate: document.getElementById('techValuation').value,
+                marketComparables: document.getElementById('techComparables').value,
+                findings: document.getElementById('techFindings').value,
+                remarks: document.getElementById('techRemarks').value,
+                recommendation: document.getElementById('techRecommendation').value,
+            };
+        }
+
+        function validateLegalForm(data) {
+            const required = ['titleSearchStatus', 'ownershipVerified', 'chainDocuments', 'encumbranceCheck',
+                'litigationCheck', 'riskLevel', 'findings', 'recommendation'
+            ];
+            for (let key of required) {
+                if (!data[key]) {
+                    document.getElementById('legalFormFeedback').textContent = '⚠️ Please fill in all required fields.';
+                    document.getElementById('legalFormFeedback').className = 'form-feedback error';
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateTechForm(data) {
+            const required = ['siteVisitStatus', 'occupancyStatus', 'constructionStage', 'propertyType', 'localityReview',
+                'accessRoadStatus', 'propertyCondition', 'riskLevel', 'findings', 'recommendation'
+            ];
+            for (let key of required) {
+                if (!data[key]) {
+                    document.getElementById('techFormFeedback').textContent = '⚠️ Please fill in all required fields.';
+                    document.getElementById('techFormFeedback').className = 'form-feedback error';
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function saveLegalDraft() {
+            const data = getLegalFormData();
+            const lead = getLead();
+            lead.legalReport = { ...lead.legalReport, ...data, status: 'draft' };
+            saveLead(lead);
+            document.getElementById('legalFormFeedback').textContent = '✅ Draft saved successfully.';
+            document.getElementById('legalFormFeedback').className = 'form-feedback success';
+        }
+
+        function saveTechDraft() {
+            const data = getTechFormData();
+            const lead = getLead();
+            lead.technicalReport = { ...lead.technicalReport, ...data, status: 'draft' };
+            saveLead(lead);
+            document.getElementById('techFormFeedback').textContent = '✅ Draft saved successfully.';
+            document.getElementById('techFormFeedback').className = 'form-feedback success';
+        }
+
+        function submitLegalReportForm() {
+            const data = getLegalFormData();
+            if (!validateLegalForm(data)) return;
+            submitLegalReport(data);
+            document.getElementById('legalFormFeedback').textContent = '✅ Legal report submitted successfully!';
+            document.getElementById('legalFormFeedback').className = 'form-feedback success';
+            setTimeout(() => navigateView('dashboard'), 1200);
+        }
+
+        function submitTechReportForm() {
+            const data = getTechFormData();
+            if (!validateTechForm(data)) return;
+            submitTechnicalReport(data);
+            document.getElementById('techFormFeedback').textContent = '✅ Technical report submitted successfully!';
+            document.getElementById('techFormFeedback').className = 'form-feedback success';
+            setTimeout(() => navigateView('dashboard'), 1200);
+        }
+
+        function handleAdminAction(section, action) {
+            adminAction(section, action);
+            navigateView('dashboard');
+        }
+
+        function handleAdminActionWithComment(section, action) {
+            const comment = prompt('Enter your comment:');
+            if (comment === null) return;
+            adminAction(section, action, comment);
+            navigateView('dashboard');
+        }
+
+        // ================================================================
+        // INIT
+        // ================================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nav clicks
+            document.querySelectorAll('.nav a').forEach(a => {
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navigateView(this.dataset.view);
+                });
+            });
+
+            // Mobile view select
+            document.getElementById('mobileViewSelect').addEventListener('change', function() {
+                navigateView(this.value);
+            });
+
+            // Initial render
+            navigateView('dashboard');
+
+            // Auto-save on change for legal form
+            document.addEventListener('change', function(e) {
+                if (e.target.closest('#legalForm') && !e.target.closest('.actions')) {
+                    const fb = document.getElementById('legalFormFeedback');
+                    if (!fb.textContent.includes('submitted')) {
+                        saveLegalDraft();
+                    }
+                }
+                if (e.target.closest('#techForm') && !e.target.closest('.actions')) {
+                    const fb = document.getElementById('techFormFeedback');
+                    if (!fb.textContent.includes('submitted')) {
+                        saveTechDraft();
+                    }
+                }
+            });
+
+            // Storage listener for cross-tab updates
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'solitaire_lead_master' && e.newValue) {
+                    navigateView(currentView);
+                }
+            });
+        });
+
+        // Expose functions to global scope for inline onclick
+        window.navigateView = navigateView;
+        window.saveLegalDraft = saveLegalDraft;
+        window.saveTechDraft = saveTechDraft;
+        window.submitLegalReportForm = submitLegalReportForm;
+        window.submitTechReportForm = submitTechReportForm;
+        window.handleAdminAction = handleAdminAction;
+        window.handleAdminActionWithComment = handleAdminActionWithComment;
+    </script>
+
+</body>
+</html>
